@@ -15,7 +15,7 @@ class Link(models.Model):
     status = models.PositiveIntegerField(default=STATUS_NORMAL, choices=STATUS_ITEMS, verbose_name="Status")
     weight = models.PositiveIntegerField(default=1, choices=zip(range(1, 6), range(1, 6)), verbose_name="Weight",
                                          help_text="The ones with high weight are shown in the front")
-    owner = models.ForeignKey(User, verbose_name="Owner")
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Owner")
     created_time = models.DateTimeField(auto_now_add=True, verbose_name="Create Date")
 
     class Meta:
@@ -41,7 +41,7 @@ class SideBar(models.Model):
     content = models.CharField(max_length=500, blank=True, verbose_name="Content",
                                help_text="If setting type is not HTML, can be blank")
     status = models.PositiveIntegerField(default=STATUS_SHOW, choices=STATUS_ITEMS, verbose_name="Status")
-    owner = models.ForeignKey(User, verbose_name="Owner")
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Owner")
     created_time = models.DateTimeField(auto_now_add=True, verbose_name="Create Date")
 
     class Meta:

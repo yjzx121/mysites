@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import User
+from blog.models import Post
 
 
 class Comment(models.Model):
@@ -9,7 +9,7 @@ class Comment(models.Model):
         (STATUS_NORMAL, 'Normal'),
         (STATUS_DELETE, 'Delete'),
     )
-    target = models.ForeignKey(Post, verbose_name="Comment Target")
+    target = models.ForeignKey(Post, on_delete=models.CASCADE, verbose_name="Comment Target")
     content = models.CharField(max_length=2000, verbose_name="Content")
     nickname = models.CharField(max_length=50, verbose_name="Nickname")
     website = models.URLField(verbose_name="Website")

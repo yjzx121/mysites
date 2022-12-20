@@ -13,7 +13,7 @@ class Category(models.Model):
     name = models.CharField(max_length=50, verbose_name="Name")
     status = models.PositiveIntegerField(default=STATUS_NORMAL, choices=STATUS_ITEMS, verbose_name="Status")
     is_nav = models.BooleanField(default=False, verbose_name="If is it navigate")
-    owner = models.ForeignKey(User, verbose_name="Owner")
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Owner")
     created_time = models.DateTimeField(auto_now_add=True, verbose_name="Create Date")
 
     class Meta:
@@ -30,11 +30,11 @@ class Tag(models.Model):
 
     name = models.CharField(max_length=10, verbose_name="Name")
     status = models.PositiveIntegerField(default=STATUS_NORMAL, choices=STATUS_ITEMS, verbose_name="Status")
-    owner = models.ForeignKey(User, verbose_name="Owner")
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Owner")
     created_time = models.DateTimeField(auto_now_add=True, verbose_name="Create Date")
 
     class Meta:
-        verbose_name = verbose_name_plural = "Label"
+        verbose_name = verbose_name_plural = "Tag"
 
 
 class Post(models.Model):
@@ -51,9 +51,9 @@ class Post(models.Model):
     desc = models.CharField(max_length=1024, blank=True, verbose_name="Summary")
     content = models.TextField(verbose_name="Text", help_text="Text must be MarkDown")
     status = models.PositiveIntegerField(default=STATUS_NORMAL, choices=STATUS_ITEMS, verbose_name="Status")
-    category = models.ForeignKey(Category, verbose_name="Category")
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name="Category")
     tag = models.ManyToManyField(Tag, verbose_name="Tag")
-    owner = models.ForeignKey(User, verbose_name="Owner")
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Owner")
     created_time = models.DateTimeField(auto_now_add=True, verbose_name="Create Date")
 
     class Meta:
