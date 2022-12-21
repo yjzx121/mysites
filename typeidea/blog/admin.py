@@ -19,7 +19,7 @@ class CategoryAdmin(admin.ModelAdmin):
     def post_count(self, obj):
         return obj.post_set.count()
 
-    post_count.short_description = 'Article Number'
+    post_count.short_description = '文章数量'
 
 
 @admin.register(Tag)
@@ -33,6 +33,20 @@ class TagAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         obj.owner = request.user
         return super(TagAdmin, self).save_model(request, obj, form, change)
+
+
+class CategoryOwnerFilter(admin.SimpleListFilter):
+    title = '分类过滤器'
+    parameter_name = 'owner_category'
+
+    def lookups(self, request, model_admin):
+        return Category.objects.filter(owner=request.user).values_list('id', 'name')
+
+    def queryset(self, request, queryset):
+        category_id = self.value()
+        if category_id:
+            return queryset.filter(category_id=self.value())
+        return queryset
 
 
 @admin.register(Post)
@@ -49,7 +63,7 @@ class PostAdmin(admin.ModelAdmin):
     actions_on_top = True
     actions_on_bottom = True
 
-    # Edit HTML
+    # 修改界面
     save_on_top = True
 
     fields = (
@@ -65,9 +79,10 @@ class PostAdmin(admin.ModelAdmin):
 
     def operator(self, obj):
         return format_html(
-            '<a href="{}">EDIT</a>',
+            '<a href="{}">编辑</a>',
             reverse('admin:blog_post_change', args=(obj.id,))
         )
+    operator.short_description = "操作"
 
     def save_model(self, request, obj, form, change):
         obj.owner = request.user
