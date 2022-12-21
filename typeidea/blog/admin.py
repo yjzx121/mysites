@@ -57,7 +57,7 @@ class PostAdmin(admin.ModelAdmin):
     ]
     list_display_links = []
 
-    list_filter = ['category', ]
+    list_filter = [CategoryOwnerFilter]
     search_fields = ['title', 'category_name']
 
     actions_on_top = True
@@ -87,3 +87,7 @@ class PostAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         obj.owner = request.user
         return super(PostAdmin, self).save_model(request, obj, form, change)
+
+    def get_queryset(self, request):
+        qs = super(PostAdmin, self).get_queryset(request)
+        return qs.filter(owner=request.user)
