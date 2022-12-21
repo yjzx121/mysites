@@ -4,12 +4,18 @@ from .models import Post, Category, Tag
 from .adminforms import PostAdminForm
 from django.contrib import admin
 from typeidea.custom_site import custom_site
+from typeidea.base_admin import BaseOwnerAdmin
+
+from django.contrib.admin.models import LogEntry
 
 # import requests
 # from django.contrib.auth import get_permission_codename
-
-
 # PERMISSION_API = "http://permission.sso.com/has_perm?user={}&perm_code={}"
+
+
+@admin.register(LogEntry, site=custom_site)
+class LogEntryAdmin(admin.ModelAdmin):
+    list_display = ['object_repr', 'object_id', 'action_flag', 'user', 'change_message']
 
 
 class PostAdmin(admin.ModelAdmin):
@@ -22,37 +28,43 @@ class PostInline(admin.TabularInline):    # StackedInline 样式不同
     model = Post
 
 
-@admin.register(Category)
-class CategoryAdmin(admin.ModelAdmin):
+@admin.register(Category, site=custom_site)
+class CategoryAdmin(BaseOwnerAdmin):
     inlines = [PostInline, ]
 
-    list_display = ('name', 'status', 'is_nav', 'created_time')
+    list_display = ('name', 'status', 'is_nav', 'created_time', 'post_count')
     fields = ('name', 'status', 'is_nav')
-
-    def __str__(self):
-        return self.name
-
-    def save_model(self, request, obj, form, change):
-        obj.owner = request.user
-        return super(CategoryAdmin, self).save_model(request, obj, form, change)
 
     def post_count(self, obj):
         return obj.post_set.count()
 
     post_count.short_description = '文章数量'
 
+"""
+    # 在没有BaseOwnerAdmin时需如此写
+    def __str__(self):
+        return self.name
 
-@admin.register(Tag)
-class TagAdmin(admin.ModelAdmin):
+    def save_model(self, request, obj, form, change):
+        obj.owner = request.user
+        return super(CategoryAdmin, self).save_model(request, obj, form, change)
+"""
+
+
+@admin.register(Tag, site=custom_site)
+class TagAdmin(BaseOwnerAdmin):
     list_display = ('name', 'status', 'created_time')
     field = ('name', 'status')
 
+"""
+    # 在没有BaseOwnerAdmin时需如此写
     def __str__(self):
         return self.name
 
     def save_model(self, request, obj, form, change):
         obj.owner = request.user
         return super(TagAdmin, self).save_model(request, obj, form, change)
+"""
 
 
 class CategoryOwnerFilter(admin.SimpleListFilter):
@@ -70,13 +82,12 @@ class CategoryOwnerFilter(admin.SimpleListFilter):
 
 
 @admin.register(Post, site=custom_site)
-class PostAdmin(admin.ModelAdmin):
+class PostAdmin(BaseOwnerAdmin):
+    form = PostAdminForm
     list_display = [
         'title', 'category', 'status',
-        'created_time', 'operator'
+        'created_time', 'owner', 'operator'
     ]
-
-    exclude = ('owner', )
 
     # 展示顺序配置 fields
     # fields = (
@@ -111,7 +122,7 @@ class PostAdmin(admin.ModelAdmin):
     filter_vertical = ('tag', )
 
     list_display_links = []
-    list_filter = [CategoryOwnerFilter]
+    list_filter = [CategoryOwnerFilter, ]
     search_fields = ['title', 'category_name']
 
     actions_on_top = True
@@ -136,6 +147,8 @@ class PostAdmin(admin.ModelAdmin):
         }
         js = ("https://cdn.bootcss.com/bootstrap/4.0.0-beta.2/js/bootstrap.bundle.js", )
 
+    """
+    # 在没有BaseOwnerAdmin时需如此写
     def save_model(self, request, obj, form, change):
         obj.owner = request.user
         return super(PostAdmin, self).save_model(request, obj, form, change)
@@ -143,17 +156,20 @@ class PostAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         qs = super(PostAdmin, self).get_queryset(request)
         return qs.filter(owner=request.user)
-
+    
     # 添加权限sso(Single Sign-On, 单点登录)
     # 虚假地址 http://permission.sso.com/has_perm?user={}&perm_code={}
-    # def has_add_permission(self, request):
-    #     opts = self.opts
-    #     codename = get_permission_codename('add', opts)
-    #     perm_code = "%s.%s" % (opts.app_label, codename)
-    #     resp = requests.get(PERMISSION_API.format(request.user.username, perm_code))
-    #     if resp.status_code == 200:
-    #         return True
-    #     else:
-    #         return False
+    def has_add_permission(self, request):
+        opts = self.opts
+        codename = get_permission_codename('add', opts)
+        perm_code = "%s.%s" % (opts.app_label, codename)
+        resp = requests.get(PERMISSION_API.format(request.user.username, perm_code))
+        if resp.status_code == 200:
+            return True
+        else:
+            return False
+    """
+
+
 
 
