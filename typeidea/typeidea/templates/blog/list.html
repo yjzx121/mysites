@@ -6,7 +6,9 @@
     {% elif category %}
     分类页: {{ category.name }}
     {% endif %}
+{% endblock %}
 
+{% block main %}
     <ul>
         {% for post in post_list %}
         <li>
@@ -19,7 +21,5 @@
         </li>
         {% endfor %}
     </ul>
+{% endblock %}
 
-
-</body>
-</html>
